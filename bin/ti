@@ -200,7 +200,7 @@ def action_log(period):
     current = None
 
     for item in work:
-        if parse_isotime(item['start']) > parse_isotime(period):
+        if period == None or parse_isotime(item['start']) > parse_isotime(period):
             start_time = parse_isotime(item['start'])
             if 'end' in item:
                 log[item['name']]['delta'] += parse_isotime(item['end']) - start_time
@@ -231,9 +231,14 @@ def action_log(period):
 
         log[name]['tmsg'] = ', '.join(tmsg)[::-1].replace(',', ' &'[::-1], 1)[::-1]
 
+    name = _not_found = object()
     for name, item in sorted(log.items(), key=(lambda x: x[1]), reverse=True):
         print(name.ljust(name_col_len), ' ∙∙ ', item['tmsg'],
                 end=' ← working\n' if current == name else '\n')
+
+    if name is _not_found:
+        print('No entries found',
+            end=' after time ' + period + '\n' if period != None else '\n')
 
 
 def action_edit():
@@ -400,7 +405,7 @@ def parse_args(argv=sys.argv):
 
     elif head in ['l', 'log']:
         fn = action_log
-        args = {'period': to_datetime(' '.join(tail))}
+        args = {'period': to_datetime(' '.join(tail)) if tail else None}
 
     elif head in ['t', 'tag']:
         if not tail:
